@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ну тiпа для волосся</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 50px;
+      }
+      #upload-area {
+        border: 2px dashed #ccc;
+        padding: 20px;
+        margin: 20px auto;
+        width: 300px;
+      }
+      #result {
+        margin-top: 20px;
+        font-weight: bold;
+      }
+      #uploaded-image {
+        margin-top: 20px;
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Закiдуй фоточку</h1>
+    <div id="upload-area">
+      <input type="file" id="file-input" accept="image/*" />
+      <button id="upload-button">Upload</button>
+    </div>
+    <img
+      id="uploaded-image"
+      src=""
+      alt="Uploaded Image"
+      style="display: none"
+    />
+    <div id="result"></div>
+
+    <script>
+      document.getElementById("upload-button").onclick = function () {
+        const fileInput = document.getElementById("file-input");
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Display the uploaded image
+        const img = document.getElementById("uploaded-image");
+        img.src = URL.createObjectURL(file);
+        img.style.display = "block";
+
+        fetch("/upload", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = ""; // Clear previous results
+            if (data.error) {
+              resultDiv.innerText = data.error;
+            } else {
+              data.predictions.forEach((pred) => {
+                const p = document.createElement("p");
+                p.innerText = `Detected: ${pred.class} - Confidence: ${pred.confidence}`;
+                resultDiv.appendChild(p);
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      };
+    </script>
+  </body>
+</html>
